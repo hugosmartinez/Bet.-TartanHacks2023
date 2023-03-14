@@ -1,0 +1,320 @@
+#pragma version 8
+intcblock 0 1 64
+bytecblock 0x6265745f656e64 0x706f74 0x747275657273 0x66616c73657273 0x 0x6265745f6964
+txn NumAppArgs
+intc_0 // 0
+==
+bnz main_l8
+txna ApplicationArgs 0
+pushbytes 0x9e4ae679 // "start_bet(uint64,pay)void"
+==
+bnz main_l7
+txna ApplicationArgs 0
+pushbytes 0x436ce646 // "make_bet(pay)void"
+==
+bnz main_l6
+txna ApplicationArgs 0
+pushbytes 0x83a30b49 // "claim_pot(asset)void"
+==
+bnz main_l5
+err
+main_l5:
+txn OnCompletion
+intc_0 // NoOp
+==
+txn ApplicationID
+intc_0 // 0
+!=
+&&
+assert
+txna ApplicationArgs 1
+intc_0 // 0
+getbyte
+callsub claimpot_4
+intc_1 // 1
+return
+main_l6:
+txn OnCompletion
+intc_0 // NoOp
+==
+txn ApplicationID
+intc_0 // 0
+!=
+&&
+assert
+txn GroupIndex
+intc_1 // 1
+-
+store 2
+load 2
+gtxns TypeEnum
+intc_1 // pay
+==
+assert
+load 2
+callsub makebet_3
+intc_1 // 1
+return
+main_l7:
+txn OnCompletion
+intc_0 // NoOp
+==
+txn ApplicationID
+intc_0 // 0
+!=
+&&
+assert
+txna ApplicationArgs 1
+btoi
+store 0
+txn GroupIndex
+intc_1 // 1
+-
+store 1
+load 1
+gtxns TypeEnum
+intc_1 // pay
+==
+assert
+load 0
+load 1
+callsub startbet_2
+intc_1 // 1
+return
+main_l8:
+txn OnCompletion
+intc_0 // NoOp
+==
+bnz main_l10
+err
+main_l10:
+txn ApplicationID
+intc_0 // 0
+==
+assert
+callsub create_0
+intc_1 // 1
+return
+
+// create
+create_0:
+proto 0 0
+bytec_0 // "bet_end"
+intc_0 // 0
+app_global_put
+bytec_1 // "pot"
+intc_0 // 0
+app_global_put
+bytec 5 // "bet_id"
+intc_0 // 0
+app_global_put
+bytec_2 // "truers"
+intc_0 // 0
+app_global_put
+bytec_3 // "falsers"
+intc_0 // 0
+app_global_put
+retsub
+
+// auth_only
+authonly_1:
+proto 1 1
+frame_dig -1
+global CreatorAddress
+==
+retsub
+
+// start_bet
+startbet_2:
+proto 2 0
+txn Sender
+callsub authonly_1
+// unauthorized
+assert
+bytec_0 // "bet_end"
+app_global_get
+intc_0 // 0
+==
+assert
+frame_dig -1
+gtxns Receiver
+global CurrentApplicationAddress
+==
+assert
+frame_dig -1
+gtxns TxID
+bytec 5 // "bet_id"
+app_global_get
+==
+assert
+bytec_1 // "pot"
+frame_dig -1
+gtxns Amount
+app_global_put
+bytec_0 // "bet_end"
+global LatestTimestamp
+frame_dig -2
++
+app_global_put
+retsub
+
+// make_bet
+makebet_3:
+proto 1 0
+intc_0 // 0
+dup
+bytec 4 // ""
+intc_0 // 0
+dup
+bytec 4 // ""
+dupn 2
+intc_0 // 0
+dupn 2
+global LatestTimestamp
+bytec_0 // "bet_end"
+app_global_get
+<
+assert
+frame_dig -1
+gtxns Sender
+txn Sender
+==
+assert
+bytec_1 // "pot"
+bytec_1 // "pot"
+app_global_get
+frame_dig -1
+gtxns Amount
++
+app_global_put
+intc_0 // 0
+frame_bury 0
+intc_0 // 0
+!
+!
+frame_bury 1
+frame_dig 0
+itob
+pushbytes 0x00 // 0x00
+intc_0 // 0
+frame_dig 1
+setbit
+concat
+frame_bury 2
+txn Sender
+box_del
+pop
+txn Sender
+frame_dig 2
+box_put
+txn Sender
+box_get
+store 4
+store 3
+load 4
+assert
+load 3
+frame_bury 7
+frame_dig 7
+intc_2 // 64
+getbit
+frame_bury 8
+intc_0 // 0
+!
+!
+frame_bury 9
+intc_1 // 1
+!
+!
+frame_bury 10
+frame_dig 8
+frame_dig 10
+==
+bnz makebet_3_l3
+makebet_3_l1:
+frame_dig 8
+frame_dig 9
+==
+bz makebet_3_l4
+bytec_3 // "falsers"
+bytec_3 // "falsers"
+app_global_get
+intc_1 // 1
++
+app_global_put
+b makebet_3_l4
+makebet_3_l3:
+bytec_2 // "truers"
+bytec_2 // "truers"
+app_global_get
+intc_1 // 1
++
+app_global_put
+b makebet_3_l1
+makebet_3_l4:
+retsub
+
+// claim_pot
+claimpot_4:
+proto 1 0
+bytec 4 // ""
+intc_0 // 0
+dupn 3
+txn Sender
+box_get
+store 6
+store 5
+load 6
+assert
+load 5
+frame_bury 0
+frame_dig 0
+intc_2 // 64
+getbit
+frame_bury 1
+frame_dig 0
+intc_0 // 0
+extract_uint64
+frame_bury 2
+intc_0 // 0
+!
+!
+frame_bury 3
+intc_1 // 1
+!
+!
+frame_bury 4
+frame_dig 1
+frame_dig 4
+==
+bnz claimpot_4_l3
+claimpot_4_l1:
+frame_dig 1
+frame_dig 3
+==
+bz claimpot_4_l4
+itxn_begin
+intc_1 // pay
+itxn_field TypeEnum
+intc_0 // 0
+itxn_field Fee
+frame_dig 2
+itxn_field Amount
+txn Sender
+itxn_field Receiver
+itxn_submit
+b claimpot_4_l4
+claimpot_4_l3:
+itxn_begin
+intc_1 // pay
+itxn_field TypeEnum
+intc_0 // 0
+itxn_field Fee
+frame_dig 2
+itxn_field Amount
+txn Sender
+itxn_field Receiver
+itxn_submit
+b claimpot_4_l1
+claimpot_4_l4:
+retsub

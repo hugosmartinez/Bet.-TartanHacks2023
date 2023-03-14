@@ -1,0 +1,46 @@
+{
+    "name": "Bet",
+    "methods": [
+        {
+            "name": "start_bet",
+            "args": [
+                {
+                    "type": "uint64",
+                    "name": "length"
+                },
+                {
+                    "type": "pay",
+                    "name": "axfer"
+                }
+            ],
+            "returns": {
+                "type": "void"
+            }
+        },
+        {
+            "name": "make_bet",
+            "args": [
+                {
+                    "type": "pay",
+                    "name": "payment"
+                }
+            ],
+            "returns": {
+                "type": "void"
+            }
+        },
+        {
+            "name": "claim_pot",
+            "args": [
+                {
+                    "type": "asset",
+                    "name": "asset"
+                }
+            ],
+            "returns": {
+                "type": "void"
+            }
+        }
+    ],
+    "networks": {}
+}
